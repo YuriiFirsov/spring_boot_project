@@ -1,8 +1,5 @@
 package com.spring_boot_project.dao;
 
-
-import org.hibernate.Session;
-import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -11,6 +8,7 @@ import java.util.List;
 import com.spring_boot_project.entity.Worker;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 
 @Repository
 public class WorkerDAOImpl implements WorkerDAO {
@@ -21,29 +19,29 @@ public class WorkerDAOImpl implements WorkerDAO {
     @Override
 
     public List<Worker> getAllWorkers() {
-
-        Session session = entityManager.unwrap(Session.class);
-        List<Worker> workers = session.createQuery("from Worker", Worker.class).getResultList();
-        return workers;
-    }
-
-    @Override
-    public void saveNewWorker(Worker worker) {
-        Session session = entityManager.unwrap(Session.class);
-        session.saveOrUpdate(worker);
+        Query query = entityManager.createQuery("from Worker", Worker.class);
+        return (List<Worker>) query.getResultList();
     }
 
     @Override
     public Worker getWorker(int id) {
-        Session session = entityManager.unwrap(Session.class);
-        return session.get(Worker.class, id);
+        Worker worker = entityManager.find(Worker.class, id);
+
+        return worker;
+    }
+
+    @Override
+    public void saveNewWorker(Worker worker) {
+
+        Worker newWorker = entityManager.merge(worker);
+        worker.setId(newWorker.getId());
     }
 
     @Override
     public void deleteWorker(int id) {
-        Session session = entityManager.unwrap(Session.class);
 
-        Query<Worker> query = session.createQuery("delete from Worker where id = :workerId");
+
+        Query query = entityManager.createQuery("delete from Worker where id =:workerId");
         query.setParameter("workerId", id);
         query.executeUpdate();
     }
